@@ -1,5 +1,6 @@
 import { cva } from "class-variance-authority";
-import * as React from "react";
+import type { HTMLAttributes } from "react";
+import type { VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
@@ -20,7 +21,10 @@ const badgeVariants = cva(
   },
 );
 
-const Badge = ({ className, variant, ...props }) => (
+type BadgeProps = HTMLAttributes<HTMLDivElement> &
+  VariantProps<typeof badgeVariants>;
+
+const Badge = ({ className, variant, ...props }: BadgeProps) => (
   <div className={cn(badgeVariants({ variant }), className)} {...props} />
 );
 

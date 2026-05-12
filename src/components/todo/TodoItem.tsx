@@ -1,14 +1,29 @@
 import { Trash2 } from "lucide-react";
+import type { CheckedState } from "@radix-ui/react-checkbox";
 import { Button, Checkbox } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import type { Task } from "@/types/task";
+import type { TaskActions } from "@/hooks/useTaskActions";
 
-export const TodoItem = ({ deleteTask, isMutating, task, toggleTask }) => (
+type TodoItemProps = {
+  deleteTask: TaskActions["deleteTask"];
+  isMutating: boolean;
+  task: Task;
+  toggleTask: TaskActions["toggleTask"];
+};
+
+export const TodoItem = ({
+  deleteTask,
+  isMutating,
+  task,
+  toggleTask,
+}: TodoItemProps) => (
   <li className="flex min-h-14 items-center gap-3 rounded-md border bg-background px-3 py-2">
     <Checkbox
       aria-label={`${task.title} 완료 상태 변경`}
       checked={task.is_completed}
       disabled={isMutating}
-      onCheckedChange={(checked) =>
+      onCheckedChange={(checked: CheckedState) =>
         toggleTask.mutate({
           id: task.id,
           isCompleted: Boolean(checked),
@@ -41,7 +56,7 @@ export const TodoItem = ({ deleteTask, isMutating, task, toggleTask }) => (
   </li>
 );
 
-const formatCreatedAt = (value) => {
+const formatCreatedAt = (value: Task["created_at"]) => {
   if (!value) return "";
 
   return new Intl.DateTimeFormat("ko-KR", {

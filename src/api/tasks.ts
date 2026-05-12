@@ -1,4 +1,6 @@
-const getApiBaseUrl = () => {
+import type { Task, UpdateTaskPayload } from "@/types/task";
+
+const getApiBaseUrl = (): string => {
   if (import.meta.env.DEV) {
     return "/api";
   }
@@ -12,10 +14,10 @@ const getApiBaseUrl = () => {
 
 const API_BASE_URL = getApiBaseUrl();
 
-const buildUrl = (path) =>
+const buildUrl = (path: string): string =>
   `${API_BASE_URL.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
 
-const request = async (path, options = {}) => {
+const request = async <T>(path: string, options: RequestInit = {}): Promise<T> => {
   const response = await fetch(buildUrl(path), {
     headers: {
       "Content-Type": "application/json",
@@ -30,27 +32,30 @@ const request = async (path, options = {}) => {
   }
 
   if (response.status === 204) {
-    return null;
+    return null as T;
   }
 
-  return response.json();
+  return response.json() as Promise<T>;
 };
 
-export const fetchTasks = () => request("/tasks/");
+export const fetchTasks = (): Promise<Task[]> => request<Task[]>("/tasks/");
 
-export const createTask = (title) =>
-  request("/tasks/", {
+export const createTask = (title: string): Promise<Task> =>
+  request<Task>("/tasks/", {
     method: "POST",
     body: JSON.stringify({ title }),
   });
 
-export const updateTask = (id, data) =>
-  request(`/tasks/${id}/`, {
+export const updateTask = (
+  id: Task["id"],
+  data: UpdateTaskPayload,
+): Promise<Task> =>
+  request<Task>(`/tasks/${id}/`, {
     method: "PATCH",
     body: JSON.stringify(data),
   });
 
-export const deleteTask = (id) =>
-  request(`/tasks/${id}/`, {
+export const deleteTask = (id: Task["id"]): Promise<null> =>
+  request<null>(`/tasks/${id}/`, {
     method: "DELETE",
   });

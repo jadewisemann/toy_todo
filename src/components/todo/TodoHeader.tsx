@@ -4,8 +4,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui";
+import type { TaskStats } from "@/types/task";
 
-export const TodoHeader = ({ stats }) => (
+type TodoHeaderProps = {
+  stats: TaskStats;
+};
+
+export const TodoHeader = ({ stats }: TodoHeaderProps) => (
   <CardHeader>
     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <div className="space-y-1">

@@ -2,7 +2,7 @@ import react from "@vitejs/plugin-react";
 import { fileURLToPath, URL } from "node:url";
 import { defineConfig, loadEnv } from "vite";
 
-const getProxyTarget = (apiBaseUrl) => {
+const getProxyTarget = (apiBaseUrl: string | undefined) => {
   if (!apiBaseUrl) {
     return undefined;
   }

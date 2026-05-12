@@ -1,13 +1,31 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  type UseMutationResult,
+} from "@tanstack/react-query";
 import {
   createTask,
   deleteTask,
   updateTask,
 } from "@/api/tasks";
+import type { Task, ToggleTaskPayload } from "@/types/task";
 
 export const TASKS_QUERY_KEY = ["tasks"];
 
-export const useTaskActions = ({ onCreateSuccess } = {}) => {
+type UseTaskActionsOptions = {
+  onCreateSuccess?: () => void;
+};
+
+export type TaskActions = {
+  createTask: UseMutationResult<Task, Error, string>;
+  deleteTask: UseMutationResult<null, Error, Task["id"]>;
+  isMutating: boolean;
+  toggleTask: UseMutationResult<Task, Error, ToggleTaskPayload>;
+};
+
+export const useTaskActions = ({
+  onCreateSuccess,
+}: UseTaskActionsOptions = {}): TaskActions => {
   const queryClient = useQueryClient();
 
   const invalidateTasks = () => {
@@ -23,7 +41,7 @@ export const useTaskActions = ({ onCreateSuccess } = {}) => {
   });
 
   const toggleTaskMutation = useMutation({
-    mutationFn: ({ id, isCompleted }) =>
+    mutationFn: ({ id, isCompleted }: ToggleTaskPayload) =>
       updateTask(id, { is_completed: isCompleted }),
     onSuccess: invalidateTasks,
   });

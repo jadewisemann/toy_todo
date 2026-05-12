@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import type { FormEvent } from "react";
 import { useState } from "react";
 import { fetchTasks } from "@/api/tasks";
 import { Card, CardContent, Separator } from "@/components/ui";
@@ -12,13 +13,14 @@ import {
   useTaskActions,
   useTaskStats,
 } from "@/hooks";
+import type { Task } from "@/types/task";
 
 const App = () => {
   const [title, setTitle] = useState("");
   const taskActions = useTaskActions({
     onCreateSuccess: () => setTitle(""),
   });
-  const tasksQuery = useQuery({
+  const tasksQuery = useQuery<Task[]>({
     queryKey: TASKS_QUERY_KEY,
     queryFn: fetchTasks,
   });
@@ -26,7 +28,7 @@ const App = () => {
   const tasks = tasksQuery.data ?? [];
   const stats = useTaskStats(tasks);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const nextTitle = title.trim();
