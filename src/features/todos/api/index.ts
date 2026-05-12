@@ -1,4 +1,4 @@
-import type { Task, UpdateTaskPayload } from "@/types/task";
+import type { Task, UpdateTaskPayload } from "../types";
 
 const getApiBaseUrl = (): string => {
   if (import.meta.env.DEV) {

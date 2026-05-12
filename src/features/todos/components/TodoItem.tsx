@@ -2,21 +2,20 @@ import { Trash2 } from "lucide-react";
 import type { CheckedState } from "@radix-ui/react-checkbox";
 import { Button, Checkbox } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import type { Task } from "@/types/task";
-import type { TaskActions } from "@/hooks/useTaskActions";
+import type { Task } from "../types";
 
 type TodoItemProps = {
-  deleteTask: TaskActions["deleteTask"];
   isMutating: boolean;
+  onDelete: (id: Task["id"]) => void;
+  onToggle: (id: Task["id"], isCompleted: boolean) => void;
   task: Task;
-  toggleTask: TaskActions["toggleTask"];
 };
 
 export const TodoItem = ({
-  deleteTask,
   isMutating,
+  onDelete,
+  onToggle,
   task,
-  toggleTask,
 }: TodoItemProps) => (
   <li className="flex min-h-14 items-center gap-3 rounded-md border bg-background px-3 py-2">
     <Checkbox
@@ -24,10 +23,7 @@ export const TodoItem = ({
       checked={task.is_completed}
       disabled={isMutating}
       onCheckedChange={(checked: CheckedState) =>
-        toggleTask.mutate({
-          id: task.id,
-          isCompleted: Boolean(checked),
-        })
+        onToggle(task.id, Boolean(checked))
       }
     />
     <div className="min-w-0 flex-1">
@@ -46,7 +42,7 @@ export const TodoItem = ({
     <Button
       aria-label={`${task.title} 삭제`}
       disabled={isMutating}
-      onClick={() => deleteTask.mutate(task.id)}
+      onClick={() => onDelete(task.id)}
       size="icon"
       type="button"
       variant="ghost"

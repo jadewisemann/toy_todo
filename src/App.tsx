@@ -1,32 +1,24 @@
-import { useQuery } from "@tanstack/react-query";
 import type { FormEvent } from "react";
 import { useState } from "react";
-import { fetchTasks } from "@/api/tasks";
-import { Card, CardContent, Separator } from "@/components/ui";
-import {
-  TodoBody,
-  TodoForm,
-  TodoHeader,
-} from "@/components/todo";
-import {
-  TASKS_QUERY_KEY,
-  useTaskActions,
-  useTaskStats,
-} from "@/hooks";
-import type { Task } from "@/types/task";
+import { Todo, todoHooks } from "@/features/todos";
+
+const {
+  useCreateTask,
+  useUpdateTask,
+  useDeleteTask,
+  useTodos,
+} = todoHooks;
 
 const App = () => {
   const [title, setTitle] = useState("");
-  const taskActions = useTaskActions({
-    onCreateSuccess: () => setTitle(""),
-  });
-  const tasksQuery = useQuery<Task[]>({
-    queryKey: TASKS_QUERY_KEY,
-    queryFn: fetchTasks,
-  });
 
-  const tasks = tasksQuery.data ?? [];
-  const stats = useTaskStats(tasks);
+  const todos = useTodos();
+  
+  const createTask = useCreateTask({
+    onSuccess: () => setTitle(""),
+  });
+  const updateTask = useUpdateTask();
+  const deleteTask = useDeleteTask();
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -34,31 +26,37 @@ const App = () => {
     const nextTitle = title.trim();
     if (!nextTitle) return;
 
-    taskActions.createTask.mutate(nextTitle);
+    createTask.mutate(nextTitle);
   };
 
   return (
     <main className="min-h-screen bg-muted/30 px-4 py-8 sm:px-6">
       <section className="mx-auto flex w-full max-w-2xl flex-col gap-4">
-        <Card>
-          <TodoHeader stats={stats} />
-          <CardContent className="space-y-5">
-            <TodoForm
-              isCreating={taskActions.createTask.isPending}
+        <Todo.Card>
+          <Todo.Header stats={todos.stats} />
+          <Todo.Card.Body>
+            <Todo.Form
+              isCreating={createTask.isPending}
               onSubmit={handleSubmit}
               setTitle={setTitle}
               title={title}
             />
-            <Separator />
-            <TodoBody
-              deleteTask={taskActions.deleteTask}
-              isMutating={taskActions.isMutating}
-              tasks={tasks}
-              tasksQuery={tasksQuery}
-              toggleTask={taskActions.toggleTask}
-            />
-          </CardContent>
-        </Card>
+            <Todo.Card.Divider />
+            {todos.query.isLoading ? <Todo.Skeleton /> : null}
+            {todos.query.isError ? <Todo.Error /> : null}
+            {todos.isReady && !todos.hasTasks ? <Todo.Empty /> : null}
+            {todos.isReady && todos.hasTasks ? (
+              <Todo.List
+                isMutating={updateTask.isPending || deleteTask.isPending}
+                onDelete={(id) => deleteTask.mutate(id)}
+                onToggle={(id, isCompleted) =>
+                  updateTask.mutate({ id, isCompleted })
+                }
+                tasks={todos.tasks}
+              />
+            ) : null}
+          </Todo.Card.Body>
+        </Todo.Card>
       </section>
     </main>
   );

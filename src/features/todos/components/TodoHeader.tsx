@@ -4,7 +4,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui";
-import type { TaskStats } from "@/types/task";
+import type { TaskStats } from "../types";
 
 type TodoHeaderProps = {
   stats: TaskStats;
