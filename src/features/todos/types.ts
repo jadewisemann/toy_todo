@@ -1,5 +1,5 @@
 export type Task = {
-  id: number;
+  id: number | string;
   title: string;
   is_completed: boolean;
   created_at: string | null;
