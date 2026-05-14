@@ -83,7 +83,8 @@ export const signIn = async (data: any) => {
 export const signUp = async (data: any) => {
   const response = await apiRequest<User>("/accounts/register/", {
     method: "POST",
-    body: JSON.stringify(data)
+    body: JSON.stringify(data),
+    credentials: "omit", // 기존 찌꺼기 쿠키가 서버로 전송되어 에러를 유발하는 것을 차단합니다.
   });
   return response;
 };
