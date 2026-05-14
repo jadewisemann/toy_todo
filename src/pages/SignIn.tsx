@@ -1,26 +1,44 @@
 import React, { useState } from "react";
-import { Link, Navigate, useLocation } from "react-router";
-import { Button, Input, Label, Card } from "../components";
+import { Link, Navigate, useLocation, useNavigate } from "react-router";
+import { Button, Input, Label, Card, useToast } from "../components";
 import { useAuth } from "../hooks";
 
 export const SignIn = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const { signIn, isSigningIn, isAuthenticated, authError } = useAuth();
+  const [isSuccessTransition, setIsSuccessTransition] = useState(false);
+  const { signIn, isSigningIn, isAuthenticated } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const from = (location.state as any)?.from || "/todos";
 
-  if (isAuthenticated) {
+  if (isAuthenticated && !isSuccessTransition) {
     return <Navigate to={from} replace />;
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    signIn({ username, password }, { onSuccess: () => {} });
+    signIn({ username, password }, { 
+      onSuccess: () => {
+        setIsSuccessTransition(true);
+        toast("로그인에 성공했습니다.", { type: "success" });
+        setTimeout(() => {
+          navigate(from);
+        }, 2000);
+      },
+      onError: (err) => {
+        toast(err.message || "로그인에 실패했습니다.", { type: "error" });
+      }
+    });
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4">
+    <>
+      {(isSigningIn || isSuccessTransition) && (
+        <div className="fixed inset-0 z-40 bg-white/40 backdrop-blur-[1px]" />
+      )}
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4 relative z-10">
       <Card className="w-full max-w-sm">
         <Card.Header className="text-center">
           <Card.Title className="text-2xl">Sign In</Card.Title>
@@ -49,9 +67,8 @@ export const SignIn = () => {
                 required 
               />
             </div>
-            {authError && <p className="text-sm font-medium text-red-500">{authError.message}</p>}
-            <Button type="submit" disabled={isSigningIn} className="w-full">
-              {isSigningIn ? "Signing In..." : "Sign In"}
+            <Button type="submit" disabled={isSigningIn || isSuccessTransition} className="w-full">
+              {isSigningIn || isSuccessTransition ? "처리 중..." : "Sign In"}
             </Button>
           </form>
         </Card.Content>
@@ -61,6 +78,7 @@ export const SignIn = () => {
           </Link>
         </Card.Footer>
       </Card>
-    </div>
+      </div>
+    </>
   );
 };

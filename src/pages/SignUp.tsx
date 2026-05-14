@@ -9,7 +9,7 @@ export const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSuccessTransition, setIsSuccessTransition] = useState(false);
-  const { signUp, signIn, isSigningUp, isAuthenticated, authError } = useAuth();
+  const { signUp, signIn, isSigningIn, isSigningUp, isAuthenticated } = useAuth();
 
   if (isAuthenticated && !isSuccessTransition) {
     return <Navigate to="/todos" replace />;
@@ -32,16 +32,30 @@ export const SignUp = () => {
                 setTimeout(() => {
                   navigate("/todos");
                 }, 2000);
+              },
+              onError: (err) => {
+                setIsSuccessTransition(false);
+                toast(err.message || "자동 로그인에 실패했습니다. 직접 로그인해주세요.", { type: "error" });
+                navigate("/signin");
               }
             }
           );
         }, 500);
+      },
+      onError: (err) => {
+        toast(err.message || "회원가입에 실패했습니다.", { type: "error" });
       }
     });
   };
 
+  const isLoading = isSigningUp || isSigningIn || isSuccessTransition;
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4">
+    <>
+      {isLoading && (
+        <div className="fixed inset-0 z-40 bg-white/40 backdrop-blur-[1px]" />
+      )}
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4 relative z-10">
       <Card className="w-full max-w-sm">
         <Card.Header className="text-center">
           <Card.Title className="text-2xl">Sign Up</Card.Title>
@@ -91,9 +105,8 @@ export const SignUp = () => {
                 required
               />
             </div>
-            {authError && <p className="text-sm font-medium text-red-500">{authError.message}</p>}
-            <Button type="submit" disabled={isSigningUp} className="w-full">
-              {isSigningUp ? "처리 중..." : "Sign Up"}
+            <Button type="submit" disabled={isLoading} className="w-full">
+              {isLoading ? "처리 중..." : "Sign Up"}
             </Button>
           </form>
         </Card.Content>
@@ -103,6 +116,7 @@ export const SignUp = () => {
           </Link>
         </Card.Footer>
       </Card>
-    </div>
+      </div>
+    </>
   );
 };
