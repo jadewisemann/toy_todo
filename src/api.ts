@@ -49,7 +49,7 @@ export const apiRequest = async <T>(
       try {
         const data = JSON.parse(text);
         message = data.message ?? data.detail ?? text;
-      } catch {}
+      } catch { }
     }
     throw new Error(message || `Request failed with ${response.status}`);
   }
@@ -61,7 +61,8 @@ export const apiRequest = async <T>(
 // Auth API
 export const fetchMe = async (): Promise<User | null> => {
   try {
-    const data = await apiRequest<{ user: User }>("/auth/me", { parseError: false });
+    // Note: /accounts/me/ isn't explicitly in the schema but is required for React state bootstrap.
+    const data = await apiRequest<{ user: User }>("/accounts/me/", { parseError: false });
     return data.user;
   } catch {
     localStorage.removeItem("token");
@@ -70,9 +71,9 @@ export const fetchMe = async (): Promise<User | null> => {
 };
 
 export const signIn = async (data: any) => {
-  const response = await apiRequest<{ token: string; user: User }>("/auth/signin", { 
-    method: "POST", 
-    body: JSON.stringify(data) 
+  const response = await apiRequest<{ token: string; user: User }>("/accounts/login/", {
+    method: "POST",
+    body: JSON.stringify(data)
   });
   if (response.token) {
     localStorage.setItem("token", response.token);
@@ -81,9 +82,9 @@ export const signIn = async (data: any) => {
 };
 
 export const signUp = async (data: any) => {
-  const response = await apiRequest<{ token: string; user: User }>("/auth/signup", { 
-    method: "POST", 
-    body: JSON.stringify(data) 
+  const response = await apiRequest<{ token: string; user: User }>("/accounts/register/", {
+    method: "POST",
+    body: JSON.stringify(data)
   });
   if (response.token) {
     localStorage.setItem("token", response.token);
@@ -93,7 +94,7 @@ export const signUp = async (data: any) => {
 
 export const signOut = async () => {
   try {
-    await apiRequest<null>("/auth/signout", { method: "POST" });
+    await apiRequest<null>("/accounts/logout/", { method: "POST" });
   } finally {
     localStorage.removeItem("token");
   }
@@ -108,22 +109,22 @@ const normalizeTask = (t: any): Task => ({
 });
 
 export const fetchTasks = async (): Promise<Task[]> => {
-  const data = await apiRequest<any>("/todos");
-  const tasks = Array.isArray(data) ? data : data.todos;
+  const data = await apiRequest<any>("/todos/tasks/");
+  const tasks = Array.isArray(data) ? data : data.todos ?? data.tasks ?? [];
   return tasks.map(normalizeTask);
 };
 
 export const createTask = async (title: string): Promise<Task> => {
-  const data = await apiRequest<any>("/todos", { method: "POST", body: JSON.stringify({ title }) });
-  return normalizeTask("todo" in data ? data.todo : data);
+  const data = await apiRequest<any>("/todos/tasks/", { method: "POST", body: JSON.stringify({ title }) });
+  return normalizeTask("todo" in data ? data.todo : "task" in data ? data.task : data);
 };
 
 export const updateTask = async (id: Task["id"], data: Partial<Task>): Promise<Task> => {
-  const res = await apiRequest<any>(`/todos/${id}`, {
+  const res = await apiRequest<any>(`/todos/tasks/${id}/`, {
     method: "PATCH",
     body: JSON.stringify({ title: data.title, completed: data.is_completed, is_completed: data.is_completed }),
   });
-  return normalizeTask("todo" in res ? res.todo : res);
+  return normalizeTask("todo" in res ? res.todo : "task" in res ? res.task : res);
 };
 
-export const deleteTask = (id: Task["id"]): Promise<null> => apiRequest<null>(`/todos/${id}`, { method: "DELETE" });
+export const deleteTask = (id: Task["id"]): Promise<null> => apiRequest<null>(`/todos/tasks/${id}/`, { method: "DELETE" });

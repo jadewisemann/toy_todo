@@ -20,7 +20,7 @@ const requireUser = (request: Request) => {
 };
 
 export const handlers = [
-  http.get("/api/auth/me", ({ request }) => {
+  http.get("/api/accounts/me/", ({ request }) => {
     const user = requireUser(request);
     if (user instanceof HttpResponse) return user;
 
@@ -32,7 +32,7 @@ export const handlers = [
     });
   }),
 
-  http.post("/api/auth/signin", async ({ request }) => {
+  http.post("/api/accounts/login/", async ({ request }) => {
     const body = (await request.json()) as { id?: string; password?: string };
     const user = mockUsers.find(
       (mockUser) =>
@@ -55,7 +55,7 @@ export const handlers = [
     });
   }),
 
-  http.post("/api/auth/signup", async ({ request }) => {
+  http.post("/api/accounts/register/", async ({ request }) => {
     const body = (await request.json()) as {
       id?: string;
       name?: string;
@@ -94,20 +94,20 @@ export const handlers = [
     );
   }),
 
-  http.post("/api/auth/signout", () => {
+  http.post("/api/accounts/logout/", () => {
     return new HttpResponse(null, { status: 204 });
   }),
 
-  http.get("/api/todos", ({ request }) => {
+  http.get("/api/todos/tasks/", ({ request }) => {
     const user = requireUser(request);
     if (user instanceof HttpResponse) return user;
 
     return HttpResponse.json({
-      todos: mockTasks.map(toTodoResponse),
+      tasks: mockTasks.map(toTodoResponse),
     });
   }),
 
-  http.post("/api/todos", async ({ request }) => {
+  http.post("/api/todos/tasks/", async ({ request }) => {
     const user = requireUser(request);
     if (user instanceof HttpResponse) return user;
 
@@ -130,10 +130,10 @@ export const handlers = [
 
     mockTasks.unshift(task);
 
-    return HttpResponse.json({ todo: toTodoResponse(task) }, { status: 201 });
+    return HttpResponse.json({ task: toTodoResponse(task) }, { status: 201 });
   }),
 
-  http.patch("/api/todos/:id", async ({ params, request }) => {
+  http.patch("/api/todos/tasks/:id/", async ({ params, request }) => {
     const user = requireUser(request);
     if (user instanceof HttpResponse) return user;
 
@@ -162,10 +162,10 @@ export const handlers = [
       task.is_completed = body.is_completed;
     }
 
-    return HttpResponse.json({ todo: toTodoResponse(task) });
+    return HttpResponse.json({ task: toTodoResponse(task) });
   }),
 
-  http.delete("/api/todos/:id", ({ params, request }) => {
+  http.delete("/api/todos/tasks/:id/", ({ params, request }) => {
     const user = requireUser(request);
     if (user instanceof HttpResponse) return user;
 
