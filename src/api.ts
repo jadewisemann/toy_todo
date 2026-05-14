@@ -1,13 +1,14 @@
 export type User = {
-  id: string;
-  name: string;
+  username: string;
+  nickname: string;
+  email: string;
 };
 
 export type Task = {
-  id: number | string;
+  id: number;
   title: string;
   is_completed: boolean;
-  created_at: string | null;
+  created_at: string;
 };
 
 const getApiBaseUrl = (): string => {
@@ -26,18 +27,15 @@ export const apiRequest = async <T>(
   options: RequestInit & { parseError?: boolean } = {}
 ): Promise<T> => {
   const { parseError = true, ...requestOptions } = options;
-  const token = localStorage.getItem("token");
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(requestOptions.headers as Record<string, string>),
   };
 
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
+  // 백엔드 명세에 따라 HttpOnly 쿠키 방식을 사용하므로 credentials 옵션을 켭니다.
   const response = await fetch(buildApiUrl(path), {
+    credentials: "include",
     ...requestOptions,
     headers,
   });
@@ -48,83 +46,69 @@ export const apiRequest = async <T>(
     if (parseError) {
       try {
         const data = JSON.parse(text);
-        message = data.message ?? data.detail ?? text;
+        message = data.detail ?? data.message ?? text;
       } catch { }
     }
     throw new Error(message || `Request failed with ${response.status}`);
   }
 
-  if (response.status === 204) return null as T;
-  return response.json() as Promise<T>;
+  if (response.status === 204 || (response.status === 200 && response.headers.get("content-length") === "0")) {
+    return null as T;
+  }
+  
+  const text = await response.text();
+  if (!text) return null as T;
+  return JSON.parse(text) as T;
 };
 
 // Auth API
 export const fetchMe = async (): Promise<User | null> => {
   try {
-    // Note: /accounts/me/ isn't explicitly in the schema but is required for React state bootstrap.
-    const data = await apiRequest<{ user: User }>("/accounts/me/", { parseError: false });
-    return data.user;
+    // 명세에는 없지만 로그인 여부 확인 및 UI 표시를 위해 유지
+    const data = await apiRequest<User>("/accounts/me/", { parseError: false });
+    return data;
   } catch {
-    localStorage.removeItem("token");
     return null;
   }
 };
 
 export const signIn = async (data: any) => {
-  const response = await apiRequest<{ token: string; user: User }>("/accounts/login/", {
+  const response = await apiRequest<{ message: string }>("/accounts/login/", {
     method: "POST",
     body: JSON.stringify(data)
   });
-  if (response.token) {
-    localStorage.setItem("token", response.token);
-  }
   return response;
 };
 
 export const signUp = async (data: any) => {
-  const response = await apiRequest<{ token: string; user: User }>("/accounts/register/", {
+  const response = await apiRequest<User>("/accounts/register/", {
     method: "POST",
     body: JSON.stringify(data)
   });
-  if (response.token) {
-    localStorage.setItem("token", response.token);
-  }
   return response;
 };
 
 export const signOut = async () => {
-  try {
-    await apiRequest<null>("/accounts/logout/", { method: "POST" });
-  } finally {
-    localStorage.removeItem("token");
-  }
+  await apiRequest<{ message: string }>("/accounts/logout/", { method: "POST" });
 };
 
 // Todos API
-const normalizeTask = (t: any): Task => ({
-  id: t.id,
-  title: t.title,
-  is_completed: t.is_completed ?? t.completed ?? false,
-  created_at: t.created_at ?? t.createdAt ?? null,
-});
-
 export const fetchTasks = async (): Promise<Task[]> => {
-  const data = await apiRequest<any>("/todos/tasks/");
-  const tasks = Array.isArray(data) ? data : data.todos ?? data.tasks ?? [];
-  return tasks.map(normalizeTask);
+  const data = await apiRequest<Task[]>("/todos/tasks/");
+  return data;
 };
 
 export const createTask = async (title: string): Promise<Task> => {
-  const data = await apiRequest<any>("/todos/tasks/", { method: "POST", body: JSON.stringify({ title }) });
-  return normalizeTask("todo" in data ? data.todo : "task" in data ? data.task : data);
+  const data = await apiRequest<Task>("/todos/tasks/", { method: "POST", body: JSON.stringify({ title, is_completed: false }) });
+  return data;
 };
 
 export const updateTask = async (id: Task["id"], data: Partial<Task>): Promise<Task> => {
-  const res = await apiRequest<any>(`/todos/tasks/${id}/`, {
+  const res = await apiRequest<Task>(`/todos/tasks/${id}/`, {
     method: "PATCH",
-    body: JSON.stringify({ title: data.title, completed: data.is_completed, is_completed: data.is_completed }),
+    body: JSON.stringify({ is_completed: data.is_completed }),
   });
-  return normalizeTask("todo" in res ? res.todo : "task" in res ? res.task : res);
+  return res;
 };
 
 export const deleteTask = (id: Task["id"]): Promise<null> => apiRequest<null>(`/todos/tasks/${id}/`, { method: "DELETE" });

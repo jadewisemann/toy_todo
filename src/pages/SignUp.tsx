@@ -4,8 +4,9 @@ import { Button, Input, Label, Card } from "../components";
 import { useAuth } from "../hooks";
 
 export const SignUp = () => {
-  const [id, setId] = useState("");
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
+  const [nickname, setNickname] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { signUp, isSigningUp, isAuthenticated, authError } = useAuth();
 
@@ -15,7 +16,7 @@ export const SignUp = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    signUp({ id, name, password }, { onSuccess: () => {} });
+    signUp({ username, password, nickname, email }, { onSuccess: () => {} });
   };
 
   return (
@@ -28,22 +29,33 @@ export const SignUp = () => {
         <Card.Content>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="id">ID</Label>
+              <Label htmlFor="username">Username</Label>
               <Input 
-                id="id"
-                value={id} 
-                onChange={(e) => setId(e.target.value)} 
-                placeholder="Enter your ID" 
+                id="username"
+                value={username} 
+                onChange={(e) => setUsername(e.target.value)} 
+                placeholder="Enter your username" 
                 required 
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="nickname">Nickname</Label>
               <Input 
-                id="name"
-                value={name} 
-                onChange={(e) => setName(e.target.value)} 
-                placeholder="Enter your name" 
+                id="nickname"
+                value={nickname} 
+                onChange={(e) => setNickname(e.target.value)} 
+                placeholder="Enter your nickname" 
+                required 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input 
+                id="email"
+                type="email"
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+                placeholder="Enter your email" 
                 required 
               />
             </div>

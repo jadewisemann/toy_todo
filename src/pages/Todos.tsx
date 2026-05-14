@@ -21,10 +21,10 @@ export const Todos = () => {
           <Card.Content className="flex justify-between items-center p-4">
             <div className="flex items-center gap-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-lg font-bold text-blue-600">
-                {user?.name?.[0] || "?"}
+                {user?.nickname?.[0] || "?"}
               </div>
               <div>
-                <p className="font-semibold text-gray-800">{user?.name}님</p>
+                <p className="font-semibold text-gray-800">{user?.nickname ?? "사용자"}님</p>
                 <p className="text-sm text-gray-500">오늘도 힘내세요!</p>
               </div>
             </div>

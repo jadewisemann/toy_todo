@@ -4,7 +4,7 @@ import { Button, Input, Label, Card } from "../components";
 import { useAuth } from "../hooks";
 
 export const SignIn = () => {
-  const [id, setId] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const { signIn, isSigningIn, isAuthenticated, authError } = useAuth();
   const location = useLocation();
@@ -16,7 +16,7 @@ export const SignIn = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    signIn({ id, password }, { onSuccess: () => {} });
+    signIn({ username, password }, { onSuccess: () => {} });
   };
 
   return (
@@ -24,17 +24,17 @@ export const SignIn = () => {
       <Card className="w-full max-w-sm">
         <Card.Header className="text-center">
           <Card.Title className="text-2xl">Sign In</Card.Title>
-          <Card.Description>Enter your ID and password to access your account.</Card.Description>
+          <Card.Description>Enter your username and password.</Card.Description>
         </Card.Header>
         <Card.Content>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="id">ID</Label>
+              <Label htmlFor="username">Username</Label>
               <Input 
-                id="id"
-                value={id} 
-                onChange={(e) => setId(e.target.value)} 
-                placeholder="Enter your ID" 
+                id="username"
+                value={username} 
+                onChange={(e) => setUsername(e.target.value)} 
+                placeholder="Enter your username" 
                 required 
               />
             </div>
