@@ -1,5 +1,4 @@
-import type { User } from "@/features/auth/types";
-import type { Task } from "@/features/todos/types";
+import type { User, Task } from "../api";
 
 export const mockUsers: Array<User & { password: string }> = [
   {
