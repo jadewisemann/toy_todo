@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, Navigate } from "react-router";
+import { Link, Navigate, useNavigate } from "react-router";
 import { Button, Input, Label, Card } from "../components";
 import { useAuth } from "../hooks";
 
@@ -14,9 +14,15 @@ export const SignUp = () => {
     return <Navigate to="/todos" replace />;
   }
 
+  const navigate = useNavigate();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    signUp({ username, password, nickname, email }, { onSuccess: () => {} });
+    signUp({ username, password, nickname, email }, { 
+      onSuccess: () => {
+        navigate("/todos");
+      } 
+    });
   };
 
   return (
