@@ -1,10 +1,9 @@
-import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { SignUp } from "../SignUp";
 import { useAuth } from "../../hooks";
 import { MemoryRouter } from "react-router";
 import { ToastProvider } from "../../components/Toast";
-import React from "react";
 
 vi.mock("../../hooks", () => ({
   useAuth: vi.fn(),
@@ -46,7 +45,7 @@ describe("SignUp Page", () => {
   it("handles successful signup, shows toast, signs in, and redirects", async () => {
     vi.useFakeTimers();
     
-    const mockSignUp = vi.fn((data, options) => {
+    const mockSignUp = vi.fn((_, options) => {
       options.onSuccess();
     });
     const mockSignIn = vi.fn();

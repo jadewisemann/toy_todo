@@ -3,7 +3,6 @@ import { describe, it, expect, vi } from "vitest";
 import { SignIn } from "../SignIn";
 import { useAuth } from "../../hooks";
 import { MemoryRouter } from "react-router";
-import React from "react";
 
 vi.mock("../../hooks", () => ({
   useAuth: vi.fn(),
