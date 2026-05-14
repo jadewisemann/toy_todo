@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
+import { ToastProvider } from "./components";
 import "./index.css";
 
 const queryClient = new QueryClient({
@@ -34,7 +35,9 @@ enableMocking().then(() => {
   ReactDOM.createRoot(root).render(
     <React.StrictMode>
       <QueryClientProvider client={queryClient}>
-        <App />
+        <ToastProvider>
+          <App />
+        </ToastProvider>
       </QueryClientProvider>
     </React.StrictMode>,
   );

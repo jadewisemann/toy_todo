@@ -4,6 +4,7 @@ import { Button, Input, Checkbox, Card } from "../components";
 
 export const Todos = () => {
   const [title, setTitle] = useState("");
+  const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
   const { tasks, isLoading, isError, createTask, updateTask, deleteTask, stats } = useTodos();
   const { user, signOut } = useAuth();
 
@@ -28,11 +29,32 @@ export const Todos = () => {
                 <p className="text-sm text-gray-500">오늘도 힘내세요!</p>
               </div>
             </div>
-            <Button variant="ghost" onClick={() => signOut()}>
+            <Button variant="ghost" onClick={() => setIsSignOutModalOpen(true)}>
               Sign Out
             </Button>
           </Card.Content>
         </Card>
+
+        {isSignOutModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <Card className="w-80 shadow-lg">
+              <Card.Header>
+                <Card.Title className="text-xl">로그아웃</Card.Title>
+              </Card.Header>
+              <Card.Content>
+                <p className="text-gray-700">정말 로그아웃 하시겠습니까?</p>
+              </Card.Content>
+              <Card.Footer className="flex justify-end gap-2">
+                <Button variant="ghost" onClick={() => setIsSignOutModalOpen(false)}>
+                  취소
+                </Button>
+                <Button variant="destructive" onClick={() => signOut()}>
+                  확인
+                </Button>
+              </Card.Footer>
+            </Card>
+          </div>
+        )}
 
         {/* Todo List Section */}
         <Card>
@@ -45,9 +67,9 @@ export const Todos = () => {
                 </Card.Description>
               </div>
               <div className="h-2 w-32 overflow-hidden rounded-full bg-gray-100">
-                <div 
-                  className="h-full bg-blue-600 transition-all duration-500" 
-                  style={{ width: `${stats.progress}%` }} 
+                <div
+                  className="h-full bg-blue-600 transition-all duration-500"
+                  style={{ width: `${stats.progress}%` }}
                 />
               </div>
             </div>
@@ -73,25 +95,24 @@ export const Todos = () => {
             ) : (
               <ul className="space-y-3">
                 {tasks.map((task) => (
-                  <li 
-                    key={task.id} 
-                    className={`flex items-center gap-3 rounded-lg border p-3 transition-all ${
-                      task.is_completed ? "bg-gray-50 border-gray-100 opacity-60" : "bg-white hover:border-blue-200"
-                    }`}
+                  <li
+                    key={task.id}
+                    className={`flex items-center gap-3 rounded-lg border p-3 transition-all ${task.is_completed ? "bg-gray-50 border-gray-100 opacity-60" : "bg-white hover:border-blue-200"
+                      }`}
                   >
-                    <Checkbox 
+                    <Checkbox
                       checked={task.is_completed}
                       onChange={(e) => updateTask({ id: task.id, data: { is_completed: e.target.checked } })}
                     />
                     <span className={`flex-1 text-sm text-gray-800 ${task.is_completed ? "line-through" : ""}`}>
                       {task.title}
                     </span>
-                    <button 
+                    <button
                       type="button"
                       onClick={() => deleteTask(task.id)}
                       className="flex items-center justify-center h-8 w-8 rounded-md text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" /></svg>
                       <span className="sr-only">Delete</span>
                     </button>
                   </li>

@@ -1,0 +1,22 @@
+# TDD Guidelines
+
+This project strictly follows Test-Driven Development (TDD).
+
+## Core Principles
+
+1. **Red**: Write a failing test before writing any production code.
+2. **Green**: Write the minimal amount of code necessary to make the test pass.
+3. **Refactor**: Refactor the code for better structure and readability while keeping tests green.
+
+## Testing Stack
+
+- **Vitest**: Test runner
+- **React Testing Library**: For UI component testing
+- **Mock Service Worker (MSW)**: For mocking network requests in tests
+
+## Rules for AI Agents
+
+1. When asked to implement a new feature or component, ALWAYS write the test first.
+2. If asked to modify an existing feature, update or write its tests first to reproduce the bug or document the new behavior.
+3. Tests should be placed in `__tests__` directories adjacent to the code they are testing, or use `.test.ts`/`.test.tsx` suffix.
+4. Ensure all tests pass (`npm test`) before reporting completion.
