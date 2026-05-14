@@ -1,15 +1,16 @@
 import { http, HttpResponse } from "msw";
 import { mockTasks, mockUsers } from "./data";
 
-let currentUserId: string | null = "user01";
+const generateToken = (userId: string) => `mock_jwt_token_${userId}`;
+const getUserIdFromToken = (token: string | null) => {
+  if (!token || !token.startsWith("Bearer mock_jwt_token_")) return null;
+  return token.replace("Bearer mock_jwt_token_", "");
+};
 
-const getCurrentUser = () =>
-  currentUserId
-    ? mockUsers.find((user) => user.id === currentUserId) ?? null
-    : null;
-
-const requireUser = () => {
-  const user = getCurrentUser();
+const requireUser = (request: Request) => {
+  const token = request.headers.get("Authorization");
+  const userId = getUserIdFromToken(token);
+  const user = userId ? mockUsers.find((u) => u.id === userId) : null;
 
   if (!user) {
     return HttpResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -19,12 +20,9 @@ const requireUser = () => {
 };
 
 export const handlers = [
-  http.get("/api/auth/me", () => {
-    const user = getCurrentUser();
-
-    if (!user) {
-      return HttpResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+  http.get("/api/auth/me", ({ request }) => {
+    const user = requireUser(request);
+    if (user instanceof HttpResponse) return user;
 
     return HttpResponse.json({
       user: {
@@ -48,9 +46,8 @@ export const handlers = [
       );
     }
 
-    currentUserId = user.id;
-
     return HttpResponse.json({
+      token: generateToken(user.id),
       user: {
         id: user.id,
         name: user.name,
@@ -87,6 +84,7 @@ export const handlers = [
 
     return HttpResponse.json(
       {
+        token: generateToken(body.id),
         user: {
           id: body.id,
           name: body.name,
@@ -97,13 +95,11 @@ export const handlers = [
   }),
 
   http.post("/api/auth/signout", () => {
-    currentUserId = null;
-
     return new HttpResponse(null, { status: 204 });
   }),
 
-  http.get("/api/todos", () => {
-    const user = requireUser();
+  http.get("/api/todos", ({ request }) => {
+    const user = requireUser(request);
     if (user instanceof HttpResponse) return user;
 
     return HttpResponse.json({
@@ -112,7 +108,7 @@ export const handlers = [
   }),
 
   http.post("/api/todos", async ({ request }) => {
-    const user = requireUser();
+    const user = requireUser(request);
     if (user instanceof HttpResponse) return user;
 
     const body = (await request.json()) as { title?: string };
@@ -138,7 +134,7 @@ export const handlers = [
   }),
 
   http.patch("/api/todos/:id", async ({ params, request }) => {
-    const user = requireUser();
+    const user = requireUser(request);
     if (user instanceof HttpResponse) return user;
 
     const task = mockTasks.find((item) => String(item.id) === params.id);
@@ -169,8 +165,8 @@ export const handlers = [
     return HttpResponse.json({ todo: toTodoResponse(task) });
   }),
 
-  http.delete("/api/todos/:id", ({ params }) => {
-    const user = requireUser();
+  http.delete("/api/todos/:id", ({ params, request }) => {
+    const user = requireUser(request);
     if (user instanceof HttpResponse) return user;
 
     const index = mockTasks.findIndex((item) => String(item.id) === params.id);

@@ -26,13 +26,20 @@ export const apiRequest = async <T>(
   options: RequestInit & { parseError?: boolean } = {}
 ): Promise<T> => {
   const { parseError = true, ...requestOptions } = options;
+  const token = localStorage.getItem("token");
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(requestOptions.headers as Record<string, string>),
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const response = await fetch(buildApiUrl(path), {
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...requestOptions.headers,
-    },
     ...requestOptions,
+    headers,
   });
 
   if (!response.ok) {
@@ -57,13 +64,40 @@ export const fetchMe = async (): Promise<User | null> => {
     const data = await apiRequest<{ user: User }>("/auth/me", { parseError: false });
     return data.user;
   } catch {
+    localStorage.removeItem("token");
     return null;
   }
 };
 
-export const signIn = (data: any) => apiRequest<{ user: User }>("/auth/signin", { method: "POST", body: JSON.stringify(data) });
-export const signUp = (data: any) => apiRequest<{ user: User }>("/auth/signup", { method: "POST", body: JSON.stringify(data) });
-export const signOut = () => apiRequest<null>("/auth/signout", { method: "POST" });
+export const signIn = async (data: any) => {
+  const response = await apiRequest<{ token: string; user: User }>("/auth/signin", { 
+    method: "POST", 
+    body: JSON.stringify(data) 
+  });
+  if (response.token) {
+    localStorage.setItem("token", response.token);
+  }
+  return response;
+};
+
+export const signUp = async (data: any) => {
+  const response = await apiRequest<{ token: string; user: User }>("/auth/signup", { 
+    method: "POST", 
+    body: JSON.stringify(data) 
+  });
+  if (response.token) {
+    localStorage.setItem("token", response.token);
+  }
+  return response;
+};
+
+export const signOut = async () => {
+  try {
+    await apiRequest<null>("/auth/signout", { method: "POST" });
+  } finally {
+    localStorage.removeItem("token");
+  }
+};
 
 // Todos API
 const normalizeTask = (t: any): Task => ({
